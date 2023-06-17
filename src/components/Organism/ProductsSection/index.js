@@ -4,17 +4,19 @@ import { Buffer } from 'buffer';
 
 export default function ProductsSection() { 
   const [groupedProducts, setGroupedProducts] = useState([]);
-
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
+        //Getting all categories 
         const categoriesResponse = await axios.get('http://localhost:3001/category/list');
         const categories = categoriesResponse.data;
-
+       
+        //Getting all products 
         const productsResponse = await axios.get('http://localhost:3001/product/list');
         const products = productsResponse.data;
 
-        // Grouping products by categories
+        //Grouping products by categories
         const groupedProducts = categories.map(category => ({
           category: category.name,
           products: products.filter(product => product.category === category._id)
@@ -30,8 +32,6 @@ export default function ProductsSection() {
   }, []);
 
 
-
-
   return (
     <div className="container">
       {groupedProducts.map(group => (
@@ -42,8 +42,8 @@ export default function ProductsSection() {
               <div key={product._id} className="col-md-3">
                 <div className="card" style={{ width: "18rem" }}>
                   {console.log(product.image)}
-                 {product.image ? (
-                    <img src={`data:image/jpeg;base64,${product.image}`} alt={product.name} />
+                  {product.image ? (
+                    <img src={`http://localhost:3001/uploads/${atob(Buffer.from(product.image).toString('base64'))}`} alt={product.name} />
                   ) : (
                     <img src="fallback-image.jpg" alt={product.name} />
                   )}
