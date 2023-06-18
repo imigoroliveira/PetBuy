@@ -4,7 +4,7 @@ import { Buffer } from 'buffer';
 
 export default function ProductsSection() { 
   const [groupedProducts, setGroupedProducts] = useState([]);
-  
+
   useEffect(() => {
     const fetchData = async () => {
       try {

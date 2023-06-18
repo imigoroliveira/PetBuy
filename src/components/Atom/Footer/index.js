@@ -6,7 +6,7 @@ export default function Footer() {
         <div className="container">
           <div className="row">
             <div className="col-12 text-center">
-                <span className="text-white">© PetBuy - A loja perfeita pro seu pet!</span>
+                <span className="text-white">© PetBuy - The perfect petshop to your pet!</span>
             </div>
           </div>
         </div>
