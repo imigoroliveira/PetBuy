@@ -3,29 +3,31 @@ import axios from 'axios';
 import Modal from 'react-modal';
 import './style.css';
 import { Buffer } from 'buffer';
+import { SearchProduct } from '../../Molecula/SearchProduct';
+import { SortProduct } from '../../Molecula/SortProduct';
 
-export default function ProductsSection() { 
+export default function ProductsSection() {
   const [groupedProducts, setGroupedProducts] = useState([]);
   const [showModal, setShowModal] = useState(false);
- 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortOption, setSortOption] = useState('');
+  const [filteredProducts, setFilteredProducts] = useState([]);
 
-
-  //Request to get all categories and products
   useEffect(() => {
     const fetchData = async () => {
       try {
-        //Getting all categories 
+        // Getting all categories
         const categoriesResponse = await axios.get('http://localhost:3001/category/list');
         const categories = categoriesResponse.data;
-       
-        //Getting all products 
+
+        // Getting all products
         const productsResponse = await axios.get('http://localhost:3001/product/list');
         const products = productsResponse.data;
 
-        //Grouping products by categories
+        // Grouping products by categories
         const groupedProducts = categories.map(category => ({
           category: category.name,
-          products: products.filter(product => product.category === category._id)
+          products: products.filter(product => product.category === category._id),
         }));
 
         setGroupedProducts(groupedProducts);
@@ -37,7 +39,43 @@ export default function ProductsSection() {
     fetchData();
   }, []);
 
-  //Action to show modal
+  useEffect(() => {
+    // Filter products based on searchTerm
+    const filtered = groupedProducts.map(group => ({
+      ...group,
+      products: group.products.filter(product =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase())
+      ),
+    }));
+
+    setFilteredProducts(filtered);
+  }, [searchTerm, groupedProducts]);
+
+  const handleSearch = event => {
+    setSearchTerm(event.target.value);
+  };
+
+  const handleSort = event => {
+    setSortOption(event.target.value);
+  };
+
+  const sortedGroupedProducts = filteredProducts.map((group) => {
+    let sortedProducts = group.products;
+  
+    if (sortOption === 'priceHigherToLower') {
+      sortedProducts = sortedProducts.sort((a, b) => b.price - a.price);
+    } else if (sortOption === 'priceLowertToHigher') {
+      sortedProducts = sortedProducts.sort((a, b) => a.price - b.price);
+    } else if (sortOption === 'name') {
+      sortedProducts = sortedProducts.sort((a, b) => a.name.localeCompare(b.name));
+    }
+  
+    return {
+      ...group,
+      products: sortedProducts,
+    };
+  });
+
   const handleShowModal = () => {
     setShowModal(true);
     setTimeout(() => {
@@ -45,17 +83,13 @@ export default function ProductsSection() {
     }, 1000);
   };
 
-  //Action to close modal
   const handleCloseModal = () => {
     setShowModal(false);
   };
-  
-  //Action to add product to cart modal
   const handleAddToCart = (product) => {
     const existingCartItems = localStorage.getItem('cartItems');
     const parsedCartItems = existingCartItems ? JSON.parse(existingCartItems) : [];
     const updatedCartItems = Array.isArray(parsedCartItems) ? [...parsedCartItems] : [];
-
 
     const isProductAdded = Array.isArray(parsedCartItems) && parsedCartItems.includes(product._id);
     
@@ -67,11 +101,18 @@ export default function ProductsSection() {
     }
   };
 
-  Modal.setAppElement('#root');
-
   return (
     <div className="container">
-      {groupedProducts.map(group => (
+      <div style={{ marginBottom: '50px' }}></div>
+      <div className='row'>
+        <div className='col cols-6'>
+          <SearchProduct searchTerm={searchTerm} onSearch={handleSearch} />
+        </div>
+        <div className='col cols-6'>
+          <SortProduct sortOption={sortOption} onSort={handleSort} />
+        </div>
+      </div>
+      {sortedGroupedProducts.map(group => (
         <div key={group.category}>
           <h4 style={{ textAlign: "center", marginBottom: "30px", marginTop: "40px" }}>{group.category}</h4>
           <div className="row row-cols-md-2 row-cols-lg-4 g-4">
@@ -86,7 +127,7 @@ export default function ProductsSection() {
                   )}
                                    <div className="card-body">
                     <h5 className="card-title">{product.name}</h5>
-                    <p className="card-text">Preço: {product.price}</p>
+                    <p className="card-text">Price: {product.price}</p>
                     {/* Outras informações do produto */}
                     <a onClick={() => handleAddToCart(product)} className="btn btn-primary">Add to cart</a>
                   </div>
@@ -103,5 +144,5 @@ export default function ProductsSection() {
         </Modal>
       )}
     </div>
-    );
+  );
 }
