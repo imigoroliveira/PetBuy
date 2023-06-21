@@ -19,13 +19,13 @@ export default function Header() {
                 </ul>
                 <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
                     <li className="nav-item">
-                    <Link className="nav-link" to="/login">Logar</Link>
+                    <Link className="nav-link" to="/login">Sign In</Link>
                     </li>
                     <li className="nav-item">
-                    <Link className="nav-link" to="/checkout">Carrinho</Link>
+                    <Link className="nav-link" to="/checkout">Checkout</Link>
                     </li>
                     <li className="nav-item">
-                    <Link className="nav-link" to="/register">Cadastrar</Link>
+                    <Link className="nav-link" to="/register">Sign Up</Link>
                     </li>
                 </ul>
             </div>

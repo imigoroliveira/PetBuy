@@ -42,4 +42,8 @@
     justify-content: center;
     backdrop-filter: blur(8px);
   }
-  
+
+  .product-card {
+    margin-bottom: 30px; 
+    width: 15rem;
+  }

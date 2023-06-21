@@ -1,5 +1,5 @@
 .footer {
-    position: fixed;
+    position: sticky;
     bottom: 0;
     width: 100%;
     height: 60px; /* altura do footer */
@@ -7,6 +7,6 @@
     color: white;
     text-align: center;
   }
-  .path{
-      margin-top: 3px;
+  .path {
+    margin-top: 3px;
   }

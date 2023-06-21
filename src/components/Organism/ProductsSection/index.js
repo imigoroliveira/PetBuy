@@ -7,7 +7,10 @@ import { Buffer } from 'buffer';
 export default function ProductsSection() { 
   const [groupedProducts, setGroupedProducts] = useState([]);
   const [showModal, setShowModal] = useState(false);
+ 
 
+
+  //Request to get all categories and products
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -34,6 +37,7 @@ export default function ProductsSection() {
     fetchData();
   }, []);
 
+  //Action to show modal
   const handleShowModal = () => {
     setShowModal(true);
     setTimeout(() => {
@@ -41,24 +45,28 @@ export default function ProductsSection() {
     }, 1000);
   };
 
+  //Action to close modal
   const handleCloseModal = () => {
     setShowModal(false);
   };
   
+  //Action to add product to cart modal
   const handleAddToCart = (product) => {
     const existingCartItems = localStorage.getItem('cartItems');
     const parsedCartItems = existingCartItems ? JSON.parse(existingCartItems) : [];
-    const isProductAdded = parsedCartItems.some((itemId) => itemId === product._id);
-  
+    const updatedCartItems = Array.isArray(parsedCartItems) ? [...parsedCartItems] : [];
+
+
+    const isProductAdded = Array.isArray(parsedCartItems) && parsedCartItems.includes(product._id);
+    
     if (!isProductAdded) {
-      parsedCartItems.push(product._id);
-      localStorage.setItem('cartItems', JSON.stringify(parsedCartItems));
+      updatedCartItems.push(product._id);
+      localStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
       handleShowModal();
       console.log(localStorage);
     }
   };
 
-  
   Modal.setAppElement('#root');
 
   return (
@@ -66,10 +74,10 @@ export default function ProductsSection() {
       {groupedProducts.map(group => (
         <div key={group.category}>
           <h4 style={{ textAlign: "center", marginBottom: "30px", marginTop: "40px" }}>{group.category}</h4>
-          <div className="row">
+          <div className="row row-cols-md-2 row-cols-lg-4 g-4">
             {group.products.map(product => (
               <div key={product._id} className="col-md-3">
-                <div className="card" style={{ width: "15rem"}}>
+                <div className="card product-card">
                   {console.log(product.image.data)}
                   {product.image ? (
                     <img src={`data:image/jpeg;base64,${Buffer.from(product.image.data).toString('base64')}`} alt="user-avatar" />
@@ -95,5 +103,5 @@ export default function ProductsSection() {
         </Modal>
       )}
     </div>
-  );
+    );
 }

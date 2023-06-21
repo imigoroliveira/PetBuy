@@ -1,0 +1,10 @@
+.footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+      }
+  
+  .main-content {
+    padding-bottom: 90px;
+  }

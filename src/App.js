@@ -1,4 +1,5 @@
 import { BrowserRouter as Router } from 'react-router-dom';
+import './style.css';
 
 import Header from './components/Atom/Header/index';
 import Footer from './components/Atom/Footer/index';
@@ -9,7 +10,7 @@ function App() {
     <Router>    
         <Header/>
         <RoutesConfig />
-        <Footer/>
+        <Footer className="footer" />
     </Router>
   );
 }
