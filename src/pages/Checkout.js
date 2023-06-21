@@ -1,130 +1,57 @@
-import React from 'react';
-import { useState } from 'react';
-import Title from '../components/Atom/Title';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 function Checkout() {
+  const [cartItems, setCartItems] = useState([]);
 
-  const [order, setOrder] = useState({
-    code: '',
-    totalAmount: 0,
-    products: [],
-    customer: '',
-    date: '',
-    time: '',
-    status: '',
-  });
+  useEffect(() => {
+    const fetchCartItems = async () => {
+      try {
+        const localStorageItems = JSON.parse(localStorage.getItem('cartItems')) || {};
+        const productIds = Object.values(localStorageItems);
+        const fetchedProducts = await Promise.all(
+          productIds.map((id) =>
+            axios.get(`http://localhost:3001/product/list/${id}`).then((res) => res.data)
+          )
+        );
+        setCartItems(fetchedProducts);
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setOrder((prevOrder) => ({ ...prevOrder, [name]: value }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Fazer algo com os dados do pedido
-    console.log(order);
-  };
+    fetchCartItems();
+  }, []);
 
 
-    return (
-      <div className="container">
-      <h1>Novo Pedido</h1>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label htmlFor="code" className="form-label">
-            Código do Pedido
-          </label>
-          <input
-            type="text"
-            className="form-control"
-            id="code"
-            name="code"
-            value={order.code}
-            onChange={handleInputChange}
-          />
-        </div>
-        <div className="mb-3">
-          <label htmlFor="totalAmount" className="form-label">
-            Preço Total
-          </label>
-          <input
-            type="number"
-            className="form-control"
-            id="totalAmount"
-            name="totalAmount"
-            value={order.totalAmount}
-            onChange={handleInputChange}
-          />
-        </div>
-        <div className="mb-3">
-          <label htmlFor="products" className="form-label">
-            Produtos
-          </label>
-          <textarea
-            className="form-control"
-            id="products"
-            name="products"
-            value={order.products}
-            onChange={handleInputChange}
-          />
-        </div>
-        <div className="mb-3">
-          <label htmlFor="customer" className="form-label">
-            Cliente
-          </label>
-          <input
-            type="text"
-            className="form-control"
-            id="customer"
-            name="customer"
-            value={order.customer}
-            onChange={handleInputChange}
-          />
-        </div>
-        <div className="mb-3">
-          <label htmlFor="date" className="form-label">
-            Data
-          </label>
-          <input
-            type="date"
-            className="form-control"
-            id="date"
-            name="date"
-            value={order.date}
-            onChange={handleInputChange}
-          />
-        </div>
-        <div className="mb-3">
-          <label htmlFor="time" className="form-label">
-            Hora
-          </label>
-          <input
-            type="time"
-            className="form-control"
-            id="time"
-            name="time"
-            value={order.time}
-            onChange={handleInputChange}
-          />
-        </div>
-        <div className="mb-3">
-          <label htmlFor="status" className="form-label">
-            Status do Pedido
-          </label>
-          <input
-            type="text"
-            className="form-control"
-            id="status"
-            name="status"
-            value={order.status}
-            onChange={handleInputChange}
-          />
-        </div>
-        <button type="submit" className="btn btn-primary">
-          Criar Pedido
-        </button>
-      </form>
-    </div>
-  );
-}
+ // Function to remove the product from cart/local storage
+ const handleRemoveFromCart = (productId) => {
+  const updatedCartItems = cartItems.filter((item) => item._id !== productId);
+  setCartItems(updatedCartItems);
+};
+
+
+  return (
+    <div className="container">
+    <h2>Produtos Adicionados ao Carrinho:</h2>
+    {cartItems.length === 0 ? (
+      <p>Nenhum produto no carrinho</p>
+    ) : (
+      <ul className="cart-items">
+        {cartItems.map((product) => (
+          <li key={product._id} className="cart-item d-flex align-items-center mb-3">
+            <img src={'data:image/jpeg;base64,'+ btoa (String.fromCharCode(...product.image.data))} alt="user-avatar" className="product-image me-3" />
+            <div className="product-details">
+              <h4>{product.name}</h4>
+              <p>Preço: {product.price}</p>
+              <button onClick={() => handleRemoveFromCart(product._id)} className="btn btn-danger">Remover do carrinho</button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+);
+};
+
 export default Checkout;
