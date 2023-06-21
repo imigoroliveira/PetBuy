@@ -4,6 +4,7 @@ import { Buffer } from 'buffer';
 
 export default function ProductsSection() { 
   const [groupedProducts, setGroupedProducts] = useState([]);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -31,6 +32,20 @@ export default function ProductsSection() {
     fetchData();
   }, []);
 
+  const handleShowModal = () => {
+    setShowModal(true);
+    setTimeout(() => {
+      setShowModal(false);
+    }, 3000);
+  };
+
+  const handleAddToCart = (product) => {
+    const existingCartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+    const updatedCartItems = [...existingCartItems, product];
+    localStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
+    handleShowModal();
+  };
+
 
   return (
     <div className="container">
@@ -41,17 +56,16 @@ export default function ProductsSection() {
             {group.products.map(product => (
               <div key={product._id} className="col-md-3">
                 <div className="card" style={{ width: "18rem" }}>
-                  {console.log(product.image)}
+                  {console.log(product.image.data)}
                   {product.image ? (
-                    <img src={`http://localhost:3001/uploads/${atob(Buffer.from(product.image).toString('base64'))}`} alt={product.name} />
-                  ) : (
-                    <img src="fallback-image.jpg" alt={product.name} />
+                    <img src={'data:image/jpeg;base64,'+ btoa (String.fromCharCode(...product.image.data))} alt="user-avatr" />                    ) : (
+                    <img src="https://static.vecteezy.com/system/resources/previews/005/337/799/original/icon-image-not-found-free-vector.jpg" alt={product.name} />
                   )}
                   <div className="card-body">
                     <h5 className="card-title">{product.name}</h5>
                     <p className="card-text">Preço: {product.price}</p>
                     {/* Outras informações do produto */}
-                    <a href="#" className="btn btn-primary">Go somewhere</a>
+                    <a href="#" className="btn btn-primary">Add to cart</a>
                   </div>
                 </div>
               </div>
@@ -59,6 +73,11 @@ export default function ProductsSection() {
           </div>
         </div>
       ))}
+      {showModal && (
+        <div className="modal">
+          <h2>Produto Adicionado ao Carrinho!</h2>
+        </div>
+      )}
     </div>
   );
 }
