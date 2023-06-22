@@ -1,70 +1,71 @@
-import React from 'react';
-import { useState } from 'react';
-import Title from '../components/Atom/Title';
+import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom";
+import api from './../services/api';
+import Title from './../components/Atom/Title';
 
 function Login() {
-    const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleEmailChange = (e) => {
-    setEmail(e.target.value);
-  };
+  const navigate = useNavigate();
 
-  const handlePasswordChange = (e) => {
-    setPassword(e.target.value);
-  };
+  function handleSubmit(event) {
+      event.preventDefault();
 
-  const handleLogin = () => {
-    // Lógica para fazer o login com o email e senha fornecidos
-    console.log('Login:', email, password);
-  };
-
-  const handleSignup = () => {
-    // Lógica para redirecionar para a página de cadastro
-    console.log('Redirecionar para página de cadastro');
-  };
+      const bodyParam = {
+          email: email,
+          password: password
+      }
 
 
+      api.post('/auth', bodyParam)
+          .then((response) => {
+              alert(" Token gerado para o usuario " + bodyParam.email)
+              localStorage.setItem("token", response.data.token);
+              localStorage.setItem("_id", response.data._id);
+              localStorage.setItem("fullName", response.data.fullName);
+           
+              navigate("/");
+              window.location.reload();
+          })
+          .catch((err) => {
+              console.error(err.response.data)
+              alert(" Ocorreu um erro! " + err.response.data.error)
+          })
+          .finally(() => {
+              setEmail("")
+              setPassword("")
+          })
+  }
     return (
-        <div class="row">
-            <div class="col">     
-                <div class="row">
-                    <div class="col">
-                        <Title title="Login"></Title>
-                    </div>
-                </div>
-                <div class="row">
-                    <div className="form-group">
-                        <label htmlFor="email">E-mail:</label>
-                        <input
-                        type="email"
-                        id="email"
-                        className="form-control"
-                        value={email}
-                        onChange={handleEmailChange}
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="password">Senha:</label>
-                        <input
-                        type="password"
-                        id="password"
-                        className="form-control"
-                        value={password}
-                        onChange={handlePasswordChange}
-                        />
-                    </div>
-                    <div>
-                        <button className="btn btn-primary" onClick={handleLogin}>
-                        Logar
-                        </button>
-                        <button className="btn btn-secondary" onClick={handleSignup}>
-                        Cadastrar
-                        </button>
-                    </div>
+      <div>
+      <Title
+          title={"Login"}
+          text={"Faça seu login para concluir a compra"} />
+       <div className="container text-center">
+            <div className="row">
+                <div className="form-custom">
+                    <form onSubmit={handleSubmit}>
+                        <div className="form-group">
+                            <label>
+                                Email:
+                                <input type="text" className="form-control" value={email} onChange={(e) => { setEmail(e.target.value) }} />
+                            </label>
+                        </div>
+                        <br />
+                        <div className="form-group">
+                            <label>
+                                Password:
+                                <input type="password" className="form-control" value={password} onChange={(e) => { setPassword(e.target.value) }} />
+                            </label>
+                        </div>
+                        <br />
+                        <button type="submit" className="btn btn-primary">Login</button>
+                    </form>
                 </div>
             </div>
         </div>
+  </div>
     )
 }
 export default Login;

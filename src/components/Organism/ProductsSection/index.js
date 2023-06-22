@@ -119,7 +119,6 @@ export default function ProductsSection() {
             {group.products.map(product => (
               <div key={product._id} className="col-md-3">
                 <div className="card product-card">
-                  {console.log(product.image.data)}
                   {product.image ? (
                     <img src={`data:image/jpeg;base64,${Buffer.from(product.image.data).toString('base64')}`} alt="user-avatar" />
                    ) : (

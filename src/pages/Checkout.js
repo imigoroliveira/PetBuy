@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Buffer } from 'buffer';
+import jwt from 'jwt-decode'
+import { useNavigate } from 'react-router-dom';
+
+
+
 function Checkout() {
   const [cartItems, setCartItems] = useState([]);
 
+  
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
@@ -23,6 +29,72 @@ function Checkout() {
     fetchCartItems();
   }, []);
 
+  function calculateTotal() {
+    let total = 0;
+    for (const product of cartItems) {
+      total += product.price * product.quantity;
+    }
+    return total;
+  }
+
+  const navigate = useNavigate();
+
+  function handleSubmit(event) {
+    event.preventDefault();
+  
+    const storedToken = localStorage.getItem("token");
+  
+    if (storedToken) {
+      try {
+        const data = jwt(storedToken);
+        const _id = localStorage.getItem("_id");          
+        //Getting user information to complete order 
+          axios.get(`http://localhost:3001/client/list/${_id}`, {
+          headers: {
+            Authorization: `Bearer ${storedToken}`
+          }
+        })
+        .then((response) => {
+          const customer = response.data;
+          const order = {
+            codigo: data.codigo,
+            total: calculateTotal(),
+            products: cartItems.map((item) => ({
+              productId: item._id,
+              quantity: item.quantity,
+            })),
+            customerId: customer._id,
+            datetime: new Date(),
+            status: "pending",
+          };
+    
+          axios.post("http://localhost:3001/order/", order, {
+            headers: {
+              Authorization: `Bearer ${storedToken}`
+            }
+          })
+          .then((response) => {
+            console.log(response.data);
+            alert("Pedido efetuado com sucesso!");
+          })
+          .catch((error) => {
+            console.error(error);
+            alert("Erro ao efetuar o pedido. Por favor, tente novamente.");
+          });
+        })
+        .catch((error) => {
+          console.error(error);
+          alert("Erro ao obter os detalhes do cliente. Por favor, tente novamente.");
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      alert('Usuário não autenticado! Por favor, faça o login!');
+      navigate("/login");
+    }
+  }
+
 
   // Function to remove the product from cart/local storage
   const handleRemoveFromCart = (productId) => {
@@ -38,6 +110,8 @@ function Checkout() {
     }, {});
     localStorage.setItem('cartItems', JSON.stringify(updatedLocalStorageItems));
   };
+
+
 
   return (
     <div className="container">
@@ -62,8 +136,8 @@ function Checkout() {
           ))}
         </ul>
       )}
-      <div class="text-center" style={{ marginBottom: '100px' }}>
-        <button className="btn btn-success">Buy Now!</button>
+      <div className="text-center" style={{ marginBottom: '100px' }}>
+        <button type="submit" className="btn btn-success"onClick={handleSubmit}>Buy Now!</button>
       </div>
   </div>
 );
