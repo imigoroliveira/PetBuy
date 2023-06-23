@@ -138,9 +138,9 @@ export default function ProductsSection() {
       ))}
       {showModal && (
         <Modal isOpen={showModal} onRequestClose={handleCloseModal} className="cartmodal" overlayClassName="overlay">
-          <h2>Produto Adicionado ao Carrinho!</h2>
-          <button onClick={handleCloseModal}>Fechar</button>
-        </Modal>
+          <h2>Product Added to Cart!</h2>
+          <button onClick={handleCloseModal}>Close</button>
+        </Modal>  
       )}
     </div>
   );

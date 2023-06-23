@@ -6,7 +6,9 @@ export default function Register() {
   const [address, setAddress] = useState('');
   const [tel, setTel] = useState('');
   const [cpf, setCpf] = useState('');
+  const [creditCardName, setCreditCardName] = useState('');
   const [creditCardNumber, setCreditCardNumber] = useState('');
+  const [creditCardCvc, setCreditCardCvc] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [profileImage, setProfileImage] = useState(null);
@@ -14,13 +16,14 @@ export default function Register() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    // Verify if all inputs was filled
     if (
       fullName === '' ||
       address === '' ||
       tel === '' ||
       cpf === '' ||
+      creditCardName === '' ||
       creditCardNumber === '' ||
+      creditCardCvc === '' ||
       email === '' ||
       password === '' ||
       profileImage === null
@@ -29,18 +32,21 @@ export default function Register() {
       return;
     }
 
+
+
     const formData = new FormData();
     formData.append('fullName', fullName);
     formData.append('address', address);
     formData.append('tel', tel);
     formData.append('cpf', cpf);
+    formData.append('creditCardName', creditCardName);
     formData.append('creditCardNumber', creditCardNumber);
+    formData.append('creditCardCvc', creditCardCvc);
     formData.append('email', email);
     formData.append('password', password);
     formData.append('profileImage', profileImage);
 
     try {
-        console.log(formData);
       const response = await api.post('client/create', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
@@ -48,20 +54,22 @@ export default function Register() {
       });
 
       console.log(response.data);
-      alert("O usuário " + response.data.fullName + " foi criado com sucesso!");
+      alert('O usuário ' + response.data.fullName + ' foi criado com sucesso!');
 
-      // Reset form values
+      // Resetar os valores do formulário
       setFullName('');
       setAddress('');
       setTel('');
       setCpf('');
+      setCreditCardName('');
       setCreditCardNumber('');
+      setCreditCardCvc('');
       setEmail('');
       setPassword('');
       setProfileImage(null);
     } catch (error) {
       console.error(error);
-      alert("Ocorreu um erro! Veja no console ..");
+      alert('Ocorreu um erro! Verifique o console para mais informações.');
     }
   };
 
@@ -77,7 +85,7 @@ export default function Register() {
 
       reader.onerror = (error) => {
         console.error(error);
-        alert("Ocorreu um erro ao ler o arquivo.");
+        alert('Error to read file!');
       };
 
       reader.readAsArrayBuffer(file);
@@ -86,86 +94,125 @@ export default function Register() {
     }
   };
 
-
   return (
     <div className="container text-center">
       <div className="row">
-        <div className="form-custom">
+        <div className="col-md-6 offset-md-3">
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label>
-                Nome Completo:
-                <input type="text" className="form-control" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-              </label>
-            </div>
-            <br />
-            <div className="form-group">
-              <label>
-                Endereço:
-                <input type="text" className="form-control" value={address} onChange={(e) => setAddress(e.target.value)} />
-              </label>
-            </div>
-            <br />
-            <div className="form-group">
-              <label>
-                Telefone:
-                <input type="text" className="form-control" value={tel} onChange={(e) => setTel(e.target.value)} />
-              </label>
-            </div>
-            <br/>
-            <div className="form-group">
-              <label>
-                CPF:
-                <input type="text" className="form-control" value={cpf} onChange={(e) => setCpf(e.target.value)} />
-              </label>
-            </div>
-            <br />
-            <div className="form-group">
-              <label>
-                Número do Cartão de Crédito:
-                <input type="text" className="form-control" value={creditCardNumber} onChange={(e) => setCreditCardNumber(e.target.value)} />
-              </label>
-            </div>
-            <br />
-            <div className="form-group">
-              <label>
-                Email:
-                <input type="email" className="form-control"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </label>
-          </div>
-          <br />
-          <div className="form-group">
-            <label>
-              Senha:
               <input
-                type="password"
-                className="form-control"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                type="text"
+                className="form-control mt-3"
+                placeholder="Full Name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
               />
-            </label>
-          </div>
-          <br />
-          <div className="form-group">
-            <label>
-              Imagem de Perfil:
+            </div>
+
+            <div className="form-group">
               <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
+                type="text"
+                className="form-control mt-3"
+                placeholder="Address"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                required
               />
-            </label>
+            </div>
+
+            <div className="form-group">
+              <input
+                type="text"
+                className="form-control mt-3"
+                placeholder="Phone Number"
+                value={tel}
+                onChange={(e) => setTel(e
+                  .target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="form-group">
+                <input
+                  type="text"
+                  className="form-control mt-3"
+                  placeholder="CPF"
+                  value={cpf}
+                  onChange={(e) => setCpf(e.target.value)}
+                  required
+                />
+              </div>
+  
+              <div className="form-group">
+                <input
+                  type="text"
+                  className="form-control mt-3"
+                  placeholder="CreditCard Name's Titular"
+                  value={creditCardName}
+                  onChange={(e) => setCreditCardName(e.target.value)}
+                  required
+                />
+              </div>
+             
+              <div className="form-group">
+                <input
+                  type="text"
+                  className="form-control mt-3"
+                  placeholder="CreditCard Number"
+                  value={creditCardNumber}
+                  onChange={(e) => setCreditCardNumber(e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="form-group">
+                <input
+                  type="text"
+                  className="form-control mt-3"
+                  placeholder="CVC"
+                  value={creditCardCvc}
+                  onChange={(e) => setCreditCardCvc(e.target.value)}
+                  required
+                />
+              </div>
+             
+              <div className="form-group">
+                <input
+                  type="email"
+                  className="form-control mt-3"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+  
+              <div className="form-group">
+                <input
+                  type="password"
+                  className="form-control mt-3"
+                  placeholder="Senha"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+  
+              <div className="form-group">
+                <input
+                  type="file"
+                  className="form-control-file"
+                  onChange={handleImageChange}
+                  required
+                />
+              </div>
+  
+              <button type="submit" className="btn btn-primary mt-3">Cadastrar</button>
+            </form>
           </div>
-          <br />
-          <button type="submit" className="btn btn-primary">
-            Register
-          </button>
-        </form>
+        </div>
       </div>
-    </div>
-  </div>
-);
-}
+    );
+  }
+  
