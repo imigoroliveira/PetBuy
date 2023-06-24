@@ -12,26 +12,46 @@ function Checkout() {
     const fetchCartItems = async () => {
       try {
         const localStorageItems = JSON.parse(localStorage.getItem('cartItems')) || {};
-        const productIds = Object.keys(localStorageItems);
+        const productIds = Object.values(localStorageItems);
         const fetchedProducts = await Promise.all(
           productIds.map((id) =>
             axios.get(`http://localhost:3001/product/list/${id}`).then((res) => res.data)
           )
         );
-        const cartItemsWithQuantity = fetchedProducts.map((product) => ({
-          ...product,
-          quantity: localStorageItems[product.id].quantity, // Altere "_id" para "id"
-        }));
-        setCartItems(cartItemsWithQuantity);
+        setCartItems(fetchedProducts);
       } catch (error) {
         console.error(error);
       }
     };
 
+    const storedToken = localStorage.getItem('token');
+    if (storedToken) {
+      try {
+        const data = jwt(storedToken);
+        const _id = localStorage.getItem('_id');
+
+        axios
+          .get(`http://localhost:3001/client/list/${_id}`, {
+            headers: {
+              Authorization: `Bearer ${storedToken}`,
+            },
+          })
+          .then((response) => {
+            const customerData = response.data;
+            setCustomer(customerData);
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
     fetchCartItems();
   }, []);
 
-  function calculateTotalPrice() {
+  function calculateTotal() {
     let total = 0;
     for (const product of cartItems) {
       total += product.price * product.quantity;
@@ -41,42 +61,6 @@ function Checkout() {
 
   const navigate = useNavigate();
 
-  function updateLocalStorage(updatedCartItems) {
-    const localStorageItems = JSON.parse(localStorage.getItem('cartItems')) || {};
-    updatedCartItems.forEach((item) => {
-      localStorageItems[item._id] = { quantity: item.quantity };
-    });
-    localStorage.setItem('cartItems', JSON.stringify(localStorageItems));
-  }
-
-  const handleRemoveFromCart = (productId) => {
-    const updatedCartItems = cartItems.filter((item) => item._id !== productId);
-    setCartItems(updatedCartItems);
-    updateLocalStorage(updatedCartItems);
-  };
-
-  const handleIncreaseQuantity = (productId) => {
-    const updatedCartItems = cartItems.map((product) => {
-      if (product._id === productId) {
-        return { ...product, quantity: product.quantity + 1 };
-      }
-      return product;
-    });
-    setCartItems(updatedCartItems);
-    updateLocalStorage(updatedCartItems);
-  };
-
-  const handleDecreaseQuantity = (productId) => {
-    const updatedCartItems = cartItems.map((product) => {
-      if (product._id === productId && product.quantity > 1) {
-        return { ...product, quantity: product.quantity - 1 };
-      }
-      return product;
-    });
-    setCartItems(updatedCartItems);
-    updateLocalStorage(updatedCartItems);
-  };
-
   function handleSubmit(event) {
     event.preventDefault();
 
@@ -84,62 +68,75 @@ function Checkout() {
 
     if (storedToken) {
       try {
-        const decodedToken = jwt(storedToken);
-        const userId = localStorage.getItem('_id');
-
+        const data = jwt(storedToken);
+        const _id = localStorage.getItem('_id');
+        // Getting user information to complete order
         axios
-          .get(`http://localhost:3001/client/list/${userId}`, {
+          .get(`http://localhost:3001/client/list/${_id}`, {
             headers: {
               Authorization: `Bearer ${storedToken}`,
             },
           })
           .then((response) => {
             const customer = response.data;
-            const totalPrice = calculateTotalPrice();
-
             const order = {
-              code: decodedToken.code,
-              totalPrice: totalPrice,
-              products: cartItems.map((product) => ({
-                product: product.id,
-                quantity: product.quantity,
+              codigo: data.codigo,
+              total: calculateTotal(),
+              products: cartItems.map((item) => ({
+                productId: item._id,
+                quantity: item.quantity,
               })),
-              client: customer._id,
-              orderDate: new Date(),
+              customerId: customer._id,
+              datetime: new Date(),
               status: 'pending',
               creditCardName: customer.creditCardName,
               creditCardNumber: customer.creditCardNumber,
-              creditCardCvc: customer.creditCardCvc,
-              address: customer.address,
+
+              addres: customer.addres,
             };
 
             axios
-              .post('http://localhost:3001/order/create', order, {
+              .post('http://localhost:3001/order/', order, {
                 headers: {
                   Authorization: `Bearer ${storedToken}`,
                 },
               })
               .then((response) => {
                 console.log(response.data);
-                alert('Order placed successfully!');
+                alert('Pedido efetuado com sucesso!');
               })
               .catch((error) => {
                 console.error(error);
-                alert('Error placing the order. Please try again.');
+                alert('Erro ao efetuar o pedido. Por favor, tente novamente.');
               });
           })
           .catch((error) => {
             console.error(error);
-            alert('Error getting customer details. Please try again.');
+            alert('Erro ao obter os detalhes do cliente. Por favor, tente novamente.');
           });
       } catch (error) {
         console.log(error);
       }
     } else {
-      alert('User not authenticated! Please log in!');
+      alert('Usuário não autenticado! Por favor, faça o login!');
       navigate('/login');
     }
   }
+
+  // Function to remove the product from cart/local storage
+  const handleRemoveFromCart = (productId) => {
+    const updatedCartItems = cartItems.filter((item) => item._id !== productId);
+    setCartItems(updatedCartItems);
+
+    const localStorageItems = JSON.parse(localStorage.getItem('cartItems')) || {};
+    const updatedLocalStorageItems = Object.keys(localStorageItems).reduce((acc, key) => {
+      if (localStorageItems[key] !== productId) {
+        acc[key] = localStorageItems[key];
+      }
+      return acc;
+    }, {});
+    localStorage.setItem('cartItems', JSON.stringify(updatedLocalStorageItems));
+  };
 
   return (
     <div className="container">
@@ -157,7 +154,9 @@ function Checkout() {
                 <li key={product._id} className="cart-item d-flex align-items-center mb-3">
                   {product.image ? (
                     <img
-                      src={`data:image/jpeg;base64,${Buffer.from(product.image.data).toString('base64')}`}
+                      src={`data:image/jpeg;base64,${Buffer.from(product.image.data).toString(
+                        'base64'
+                      )}`}
                       alt="Image of product"
                       style={{ height: '300px', marginRight: '20px' }}
                     />
@@ -170,16 +169,11 @@ function Checkout() {
                   <div className="product-details">
                     <h4>{product.name}</h4>
                     <p>Price: {product.price}</p>
-                    <p>Quantity: {product.quantity}</p>
-                    <div>
-                      <button onClick={() => handleIncreaseQuantity(product._id)}>+</button>
-                      <button onClick={() => handleDecreaseQuantity(product._id)}>-</button>
-                    </div>
                     <button
                       onClick={() => handleRemoveFromCart(product._id)}
                       className="btn btn-danger"
                     >
-                      Remove from Cart
+                      Remover do carrinho
                     </button>
                   </div>
                 </li>
@@ -191,20 +185,14 @@ function Checkout() {
         <div className="col-md-4">
           {customer && (
             <div>
-              <h4>Payment Method:</h4>
-              <p style={{ fontSize: '14px', marginBottom: '10px' }}>
-                Credit Card Name:{' '}
-                <span style={{ fontSize: '15px', fontWeight: 'bold' }}>{customer.creditCardName}</span>
-                <br />
-                Credit Card Number:{' '}
-                <span style={{ fontSize: '15px', fontWeight: 'bold' }}>{customer.creditCardNumber}</span>
-              </p>
-              <h4>
-                Shipping Address:<br />
-                <span style={{ fontSize: '15px' }}>Address:</span>{' '}
-                <span style={{ fontSize: '15px', fontWeight: 'bold' }}>{customer.address}</span>
-              </h4>
-            </div>
+            <h4>Payment Method:</h4>
+            <p style={{ fontSize: '14px', marginBottom: '10px' }}>
+              Nome no Cartão: <span style={{ fontSize: '15px', fontWeight: 'bold' }}>{customer.creditCardName}</span>
+              <br />
+              Numero do Cartão: <span style={{ fontSize: '15px', fontWeight: 'bold'  }}>{customer.creditCardNumber}</span>
+            </p>
+            <h4>Shipping Address:<br></br> <span style={{ fontSize: '15px' }}>Endereco de Entrega:</span> <span style={{ fontSize: '15px', fontWeight: 'bold' }}>{customer.address}</span></h4>
+          </div>
           )}
         </div>
       </div>
@@ -213,7 +201,6 @@ function Checkout() {
         <button type="submit" className="btn btn-success" onClick={handleSubmit}>
           Buy Now!
         </button>
-        <h2>Total: R$ {calculateTotalPrice().toFixed(2)}</h2>
       </div>
     </div>
   );
