@@ -6,7 +6,10 @@ export default function EditClient() {
   const [address, setAddress] = useState('');
   const [tel, setTel] = useState('');
   const [cpf, setCpf] = useState('');
+  const [creditCardName, setCreditCardName] = useState('');
   const [creditCardNumber, setCreditCardNumber] = useState('');
+  const [creditCardCvc, setCreditCardCvc] = useState('');
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [profileImage, setProfileImage] = useState(null);
@@ -35,7 +38,9 @@ export default function EditClient() {
       setAddress(selectedClientData.address);
       setTel(selectedClientData.tel);
       setCpf(selectedClientData.cpf);
+      setCreditCardName(selectedClientData.creditCardName);
       setCreditCardNumber(selectedClientData.creditCardNumber);
+      setCreditCardCvc(selectedClientData.creditCardCvc);
       setEmail(selectedClientData.email);
       setPassword(selectedClientData.password);
       setProfileImage(selectedClientData.profileImage);
@@ -51,12 +56,14 @@ export default function EditClient() {
         address,
         tel,
         cpf,
+        creditCardName,
         creditCardNumber,
+        creditCardCvc,
         email,
         password,
         profileImage,
       });
-      alert('Cliente atualizado com sucesso!');
+      alert('Cliente '+ fullName +' atualizado com sucesso!');
     } catch (error) {
       console.error(error);
       alert('Ocorreu um erro ao atualizar o cliente.');
@@ -64,7 +71,6 @@ export default function EditClient() {
   };
 
   const handleImageChange = (event) => {
-    // Resto do código...
   };
 
   return (
@@ -139,14 +145,39 @@ export default function EditClient() {
                 </label>
               </div>
               <br />
+              
               <div className="form-group">
                 <label>
-                  Número do Cartão de Crédito:
+                    Credit Card's Name:
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={creditCardName}
+                    onChange={(e) => setCreditCardName(e.target.value)}
+                  />
+                </label>
+              </div>
+              <br />
+              <div className="form-group">
+                <label>
+                    Credit Card's Number:
                   <input
                     type="text"
                     className="form-control"
                     value={creditCardNumber}
                     onChange={(e) => setCreditCardNumber(e.target.value)}
+                  />
+                </label>
+              </div>
+              <br />
+              <div className="form-group">
+                <label>
+                  Credit Card's Cvc
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={creditCardCvc}
+                    onChange={(e) => setCreditCardCvc(e.target.value)}
                   />
                 </label>
               </div>

@@ -207,7 +207,6 @@ export default function Register() {
                   required
                 />
               </div>
-  
               <button type="submit" className="btn btn-primary mt-3">Cadastrar</button>
             </form>
           </div>
