@@ -86,20 +86,23 @@ export default function ProductsSection() {
   const handleCloseModal = () => {
     setShowModal(false);
   };
-  const handleAddToCart = (product) => {
-    const existingCartItems = localStorage.getItem('cartItems');
-    const parsedCartItems = existingCartItems ? JSON.parse(existingCartItems) : [];
-    const updatedCartItems = Array.isArray(parsedCartItems) ? [...parsedCartItems] : [];
 
-    const isProductAdded = Array.isArray(parsedCartItems) && parsedCartItems.includes(product._id);
-    
-    if (!isProductAdded) {
-      updatedCartItems.push(product._id);
-      localStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
-      handleShowModal();
-      console.log(localStorage);
-    }
-  };
+
+ const handleAddToCart = (product) => {
+  const existingCartItems = localStorage.getItem('cartItems');
+  const parsedCartItems = existingCartItems ? JSON.parse(existingCartItems) : [];
+  const updatedCartItems = Array.isArray(parsedCartItems) ? [...parsedCartItems] : [];
+
+  const isProductAdded = Array.isArray(parsedCartItems) && parsedCartItems.some(item => item._id === product._id);
+
+  if (!isProductAdded) {
+    const updatedProduct = { productId: product._id, quantity: 1 }; // Salva apenas o objectId e a quantidade
+    updatedCartItems.push(updatedProduct);
+    localStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
+    handleShowModal();
+    console.log(localStorage);
+  }
+};
 
   return (
     <div className="container">
