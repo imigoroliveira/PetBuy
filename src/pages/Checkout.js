@@ -80,7 +80,25 @@ function Checkout() {
             })
               .then((response) => {
                 console.log(response.data);
-                alert("Pedido efetuado com sucesso!");
+                alert("Pedido efetuado com sucesso! Confirmacaao enviada para o email "+client.email);
+                const emailData = {
+                  subject: "Order Confirmation",
+                  message: "Successful order",
+                  email: `${client.email}`,
+                };
+                axios.post("http://localhost:3001/order/sendEmail", emailData,{
+                  headers: {
+                    Authorization: `Bearer ${storedToken}`
+                  }
+                })
+                  .then((response) => {
+                    console.log(response.data);
+                    alert("Pedido efetuado com sucesso! E-mail enviado.");
+                  })
+                  .catch((error) => {
+                    console.error(error);
+                    alert("Erro ao enviar o e-mail. Por favor, tente novamente.");
+                });
               })
               .catch((error) => {
                 console.error(error);
