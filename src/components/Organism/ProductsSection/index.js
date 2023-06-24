@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Modal from 'react-modal';
 import './style.css';
+import { Link } from 'react-router-dom';
 import { Buffer } from 'buffer';
 import { SearchProduct } from '../../Molecula/SearchProduct';
 import { SortProduct } from '../../Molecula/SortProduct';
@@ -86,21 +87,22 @@ export default function ProductsSection() {
   const handleCloseModal = () => {
     setShowModal(false);
   };
+
+  
   const handleAddToCart = (product) => {
     const existingCartItems = localStorage.getItem('cartItems');
     const parsedCartItems = existingCartItems ? JSON.parse(existingCartItems) : [];
     const updatedCartItems = Array.isArray(parsedCartItems) ? [...parsedCartItems] : [];
-
+  
     const isProductAdded = Array.isArray(parsedCartItems) && parsedCartItems.includes(product._id);
     
     if (!isProductAdded) {
-      updatedCartItems.push(product._id);
+      updatedCartItems.push({ id: product._id, quantity: 1 }); // Adicionar o objeto com id e quantidade
       localStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
       handleShowModal();
       console.log(localStorage);
     }
   };
-
   return (
     <div className="container">
       <div style={{ marginBottom: '50px' }}></div>
@@ -127,8 +129,13 @@ export default function ProductsSection() {
                                    <div className="card-body">
                     <h5 className="card-title">{product.name}</h5>
                     <p className="card-text">Price: {product.price}</p>
-                    {/* Outras informações do produto */}
-                    <a onClick={() => handleAddToCart(product)} className="btn btn-primary">Add to cart</a>
+                    <Link to={`/productDetail/${product._id}`} className="btn btn-success">
+                      View more
+                    </Link>
+                    <br />
+                    <a onClick={() => handleAddToCart(product)} className="btn btn-primary mt-2">
+                      Add to cart
+                    </a>
                   </div>
                 </div>
               </div>

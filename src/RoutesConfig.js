@@ -11,7 +11,7 @@ export default function RoutesConfig() {
     return (
     <Routes>
         <Route path='/' element={<Home/>} />
-        <Route path='/productDetail' element={<ProductDetail/>} />
+        <Route path='/productDetail/:id' element={<ProductDetail/>} />
         <Route path='/login' element={<Login/>} />
         <Route path='/checkout' element={<Checkout/>} />
         <Route path='/register' element={<Register/>} />
